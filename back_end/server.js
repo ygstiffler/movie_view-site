@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 
@@ -10,10 +11,16 @@ const app = express();
 app.use(express.json());
 
 // CORS configuration for multiple environments
+const derivedRailwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN
+  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+  : null;
+
 const allowedOrigins = [
   'http://localhost:3000',
   'https://localhost:3000',
-  process.env.FRONTEND_URL
+  'https://movie-site-mu-five.vercel.app',
+  process.env.FRONTEND_URL,
+  derivedRailwayDomain
 ].filter(Boolean);
 
 const corsOptions = {
@@ -37,6 +44,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // MongoDB Connection
+if (!process.env.MONGO_URL) {
+  console.error("Missing MONGO_URL environment variable. Set it before starting the server.");
+  process.exit(1);
+}
+
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.error("MongoDB connection error:", err));
@@ -56,14 +68,19 @@ app.get("/api/health", (req, res) => {
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {
-  // Set static folder
+  // Set static folder if the frontend build is present
   const frontendPath = path.join(__dirname, '../front_end/dist');
-  app.use(express.static(frontendPath));
 
-  // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(frontendPath, 'index.html'));
-  });
+  if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
+
+    // Handle React routing, return all requests to React app
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve(frontendPath, 'index.html'));
+    });
+  } else {
+    console.log('No frontend build found at', frontendPath, '- skipping static file hosting.');
+  }
 }
 
 // Error handling middleware
