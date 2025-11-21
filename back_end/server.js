@@ -52,8 +52,16 @@ const corsOptions = {
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+const corsMiddleware = cors(corsOptions);
+app.use(corsMiddleware);
+
+// Handle preflight requests globally without triggering path-to-regexp wildcard errors
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return corsMiddleware(req, res, () => res.sendStatus(200));
+  }
+  next();
+});
 
 // Middleware
 app.use(express.json());
@@ -81,6 +89,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Serve static files from the React app in production
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {
   // Set static folder if the frontend build is present

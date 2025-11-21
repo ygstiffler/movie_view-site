@@ -4,11 +4,8 @@ import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaCheck, FaTimes } from 
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import httpClient from '../services/httpClient';
 import '../css/Auth.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://movieview-site-production.up.railway.app';
 
 const Signup = () => {
   useEffect(() => {
@@ -47,12 +44,9 @@ const Signup = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const decoded = jwtDecode(credentialResponse.credential);
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/google`,
-        { credential: credentialResponse.credential },
-        { headers: { 'Content-Type': 'application/json' } }
-      );
+      const response = await httpClient.post('/auth/google', {
+        credential: credentialResponse.credential,
+      });
 
       if (response.data?.token) {
         login(response.data.token);
@@ -113,21 +107,11 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/register`,
-        {
-          username: formData.username.trim(),
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          withCredentials: true
-        }
-      );
+      const response = await httpClient.post('/auth/register', {
+        username: formData.username.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      });
 
       setError('');
       navigate('/', {
