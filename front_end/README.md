@@ -1,6 +1,7 @@
 # React + Vite
+This website helps movie lovers to review their movies and their watch list 
 
-This is my semi-functional webapp which l used react as a front-end framework and node.js as my backend to handle my APIs 
+This project sharpened my knowledge on APis and how to use them to fetch data from external sources and display it in a user-friendly way 
 
 this site is a simple webapp that fetches movies from The Movies Database website and displays them in my movie_site 
 

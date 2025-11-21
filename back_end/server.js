@@ -7,28 +7,39 @@ const fs = require("fs");
 
 const app = express();
 
-// Middleware
-app.use(express.json());
-
 // CORS configuration for multiple environments
 const derivedRailwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN
   ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
   : null;
+
+const normalizeOrigin = (origin) =>
+  typeof origin === 'string' ? origin.replace(/\/$/, '') : origin;
+
+const additionalOrigins = process.env.CORS_ADDITIONAL_ORIGINS
+  ? process.env.CORS_ADDITIONAL_ORIGINS.split(',')
+      .map(origin => origin.trim())
+      .filter(Boolean)
+  : [];
 
 const allowedOrigins = [
   'http://localhost:3000',
   'https://localhost:3000',
   'https://movie-site-mu-five.vercel.app',
   process.env.FRONTEND_URL,
-  derivedRailwayDomain
-].filter(Boolean);
+  derivedRailwayDomain,
+  ...additionalOrigins
+]
+  .filter(Boolean)
+  .map(normalizeOrigin);
 
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
+
+    const normalizedOrigin = normalizeOrigin(origin);
+
+    if (allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
       console.log('CORS blocked for origin:', origin);
@@ -42,6 +53,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// Middleware
+app.use(express.json());
 
 // MongoDB Connection
 if (!process.env.MONGO_URL) {

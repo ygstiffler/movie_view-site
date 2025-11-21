@@ -22,7 +22,12 @@
 .movie-poster img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
+  transition: transform 0.3s ease;
+}
+
+.movie-poster:hover img {
+  transform: scale(1.05);
 }
 
 .movie-overlay {
@@ -105,6 +110,20 @@
   color: #ffd700;
   font-size: 0.9rem;
   margin-top: auto;
+}
+
+/* Star icon styling */
+.star-icon,
+.inline-star,
+.movie-rating svg {
+  color: #FFD700; /* Gold color */
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.rating .inline-star {
+  display: inline-block;
+  margin-right: 2px;
 }
 
 @media (max-width: 768px) {

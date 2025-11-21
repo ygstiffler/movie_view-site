@@ -1,54 +1,77 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
+import { FaGithub, FaLinkedin, FaStar, FaThumbsUp, FaThumbsDown, FaPaperPlane, FaFilm, FaUsers, FaCommentAlt } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import '../css/About.css';
 
+// Local storage keys
 const MESSAGE_KEY = "movie_review_messages";
 const LIKED_KEY = "movie_review_liked_ids";
 const DISLIKED_KEY = "movie_review_disliked_ids";
 
-function getStoredMessages() {
+// Helper functions for local storage operations
+const getStoredMessages = () => {
     const data = localStorage.getItem(MESSAGE_KEY);
     if (!data) return [
         { user: "Alice", text: "Great platform for movie lovers!", likes: 2, id: 1 },
         { user: "Bob", text: "I found my new favorite movie here.", likes: 1, id: 2 },
     ];
     return JSON.parse(data);
-}
+};
 
-function storeMessages(messages) {
+const storeMessages = (messages) => {
     localStorage.setItem(MESSAGE_KEY, JSON.stringify(messages));
-}
+};
 
-function getLikedIds() {
+const getLikedIds = () => {
     try {
         return JSON.parse(localStorage.getItem(LIKED_KEY)) || [];
     } catch {
         return [];
     }
-}
+};
 
-function storeLikedIds(ids) {
+const storeLikedIds = (ids) => {
     localStorage.setItem(LIKED_KEY, JSON.stringify(ids));
-}
+};
 
-function getDislikedIds() {
+const getDislikedIds = () => {
     try {
         return JSON.parse(localStorage.getItem(DISLIKED_KEY)) || [];
     } catch {
         return [];
     }
-}
+};
 
-function storeDislikedIds(ids) {
+const storeDislikedIds = (ids) => {
     localStorage.setItem(DISLIKED_KEY, JSON.stringify(ids));
-}
+};
+
+// Loading animation variants
+const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+        opacity: 1, 
+        y: 0,
+        transition: { duration: 0.5 }
+    }
+};
 
 const About = () => {
-    const [messages, setMessages] = React.useState(getStoredMessages());
-    const [input, setInput] = React.useState("");
-    const [likedIds, setLikedIds] = React.useState(getLikedIds());
-    const [dislikedIds, setDislikedIds] = React.useState(getDislikedIds());
+    const [messages, setMessages] = useState(getStoredMessages());
+    const [input, setInput] = useState("");
+    const [likedIds, setLikedIds] = useState(getLikedIds());
+    const [dislikedIds, setDislikedIds] = useState(getDislikedIds());
+    const [activeTab, setActiveTab] = useState('about');
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Simulate loading
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 1000);
+        return () => clearTimeout(timer);
+    }, []);
 
     // Listen for changes from other tabs/windows
-    React.useEffect(() => {
+    useEffect(() => {
         const onStorage = () => setMessages(getStoredMessages());
         window.addEventListener("storage", onStorage);
         return () => window.removeEventListener("storage", onStorage);
@@ -63,8 +86,9 @@ const About = () => {
                 likes: 0,
                 dislikes: 0,
                 id: Date.now(),
+                timestamp: new Date().toISOString()
             };
-            const updated = [...messages, newMsg];
+            const updated = [newMsg, ...messages];
             storeMessages(updated);
             setMessages(updated);
             setInput("");
@@ -181,7 +205,7 @@ const About = () => {
                     reviewing, and sharing opinions on the latest films. 
                     Our mission is to connect movie enthusiasts and help you find your next favorite watch.
 
-                    Thank you for using our websitr !!
+                    Thank you for using our website !!
                 </p>
                 <div
                     style={{
@@ -200,8 +224,12 @@ const About = () => {
                             textDecoration: "none",
                             fontWeight: 600,
                             transition: "color 0.2s",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px"
                         }}
                     >
+                        <FaGithub style={{ fontSize: '1.2rem' }} />
                         GitHub
                     </a>
                     <a
